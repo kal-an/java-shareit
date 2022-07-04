@@ -15,10 +15,24 @@ public class BookingDto {
     private Long id;
     private LocalDate start;
     private LocalDate end;
-    private ItemDto item;
-    private User booker;
+    private Item item;
+    private Long userId;
     private Status status;
 
-    public BookingDto(LocalDate start, LocalDate end, Long userId, Status status) {
+    public BookingDto(LocalDate start,
+                      LocalDate end,
+                      String name,
+                      Long userId,
+                      Status status) {
+        this.start = start;
+        this.end = end;
+        this.item.name = name;
+        this.userId = userId;
+        this.status = status;
+    }
+
+    private static class Item {
+        private long id;
+        private String name;
     }
 }

@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Setter
 @Getter
@@ -18,5 +19,6 @@ public class User {
     private String name;
 
     @Email(message = "Email should be valid")
+    @NotEmpty(message = "Email should not be empty")
     private String email;
 }

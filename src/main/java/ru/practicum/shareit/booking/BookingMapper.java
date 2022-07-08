@@ -9,6 +9,7 @@ public class BookingMapper {
         return new BookingDto(
                 booking.getStart(),
                 booking.getEnd(),
+                booking.getItem().getName(),
                 booking.getBooker().getId(),
                 booking.getStatus()
         );

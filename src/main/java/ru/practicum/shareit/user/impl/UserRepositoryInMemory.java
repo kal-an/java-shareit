@@ -39,7 +39,7 @@ public class UserRepositoryInMemory implements UserRepository {
                 if (user.getName() != null) {
                     u.setName(user.getName());
                 }
-                if (user.getEmail() != null){
+                if (user.getEmail() != null) {
                     u.setEmail(user.getEmail());
                 }
                 return Optional.of(u);

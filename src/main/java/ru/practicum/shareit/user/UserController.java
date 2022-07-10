@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.InvalidEntityException;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import javax.validation.Valid;
@@ -22,20 +23,18 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
-        if (user.getId() != null) {
-            log.error("User ID should be empty {}", user);
+    public UserDto create(@Valid @RequestBody UserDto userDto) {
+        if (userDto.getId() != null) {
+            log.error("User ID should be empty {}", userDto);
             throw new InvalidEntityException("User ID should be empty");
         }
-        return service.createUser(user).orElseThrow(() ->
-                new UserNotFoundException(user.toString()));
+        return service.createUser(userDto);
     }
 
     @PatchMapping("/{id}")
-    public User update(@RequestBody User user,
+    public UserDto update(@RequestBody UserDto userDto,
                        @PathVariable long id) {
-        return service.updateUser(user, id).orElseThrow(() ->
-                new UserNotFoundException(user.toString()));
+        return service.updateUser(userDto, id);
     }
 
     @GetMapping

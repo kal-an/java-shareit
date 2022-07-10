@@ -3,9 +3,11 @@ package ru.practicum.shareit.item.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
@@ -28,24 +30,33 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item addItem(Item item, long userId) {
+    public ItemDto addItem(ItemDto itemDto, long userId) {
+        final Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userService.getUserById(userId));
-        return repository.addItem(item).orElseThrow();
+        final Item addedItem = repository.addItem(item).orElseThrow(() ->
+                new ItemNotFoundException(item.toString()));
+        return ItemMapper.toItemDto(addedItem);
     }
 
     @Override
-    public Item editItem(Item item, long itemId, long userId) {
-        final Item foundedItem = getItemById(itemId);
+    public ItemDto editItem(ItemDto itemDto, long itemId, long userId) {
+        final Item foundedItem = ItemMapper.toItem(getItemById(itemId));
+        log.info(itemDto.toString());
+        log.info(foundedItem.toString());
+        final Item item = ItemMapper.toItem(itemDto);
         if (!foundedItem.getOwner().getId().equals(userId)) {
             throw new UserNotFoundException("UserID should be item owner");
         }
-        return repository.editItem(item, itemId).orElseThrow();
+        final Item editedItem = repository.editItem(item, itemId).orElseThrow(() ->
+                new ItemNotFoundException(item.toString()));
+        return ItemMapper.toItemDto(editedItem);
     }
 
     @Override
-    public Item getItemById(long id) {
-        return repository.getItemById(id).orElseThrow(() ->
+    public ItemDto getItemById(long id) {
+        final Item item = repository.getItemById(id).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", id)));
+        return ItemMapper.toItemDto(item);
     }
 
     private Collection<Item> getAllItems() {

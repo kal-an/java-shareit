@@ -4,13 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ConflictEntityException;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -24,19 +25,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> createUser(User user) {
+    public UserDto createUser(UserDto userDto) {
+        final User user = UserMapper.toUser(userDto);
         for (User u : userRepository.getAllUsers()) {
             if (u.getEmail().equals(user.getEmail())) {
-                log.error("This email {} already exist", user.getEmail());
+                log.error("This email {} already exist", userDto.getEmail());
                 throw new ConflictEntityException("This email already exist");
             }
         }
-        return userRepository.createUser(user);
+        return UserMapper.toUserDto(userRepository.createUser(user).orElseThrow(() ->
+                new UserNotFoundException(user.toString())));
     }
 
     @Override
-    public Optional<User> updateUser(User user, Long userId) {
+    public UserDto updateUser(UserDto userDto, Long userId) {
         getUserById(userId);
+        final User user = UserMapper.toUser(userDto);
         for (User u : getAllUsers()) {
             if (u.getEmail().equals(user.getEmail())
                     && !u.getId().equals(userId)) {
@@ -44,8 +48,8 @@ public class UserServiceImpl implements UserService {
                 throw new ConflictEntityException("This email already exist");
             }
         }
-
-        return userRepository.updateUser(user, userId);
+        return UserMapper.toUserDto(userRepository.updateUser(user, userId).orElseThrow(() ->
+                new UserNotFoundException(user.toString())));
     }
 
     @Override

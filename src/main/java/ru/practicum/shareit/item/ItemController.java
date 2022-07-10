@@ -30,21 +30,19 @@ public class ItemController {
             log.error("Item ID should be empty {}", itemDto);
             throw new InvalidEntityException("Item ID should be empty");
         }
-        final Item item = ItemMapper.toItem(itemDto);
-        return ItemMapper.toItemDto(service.addItem(item, userId));
+        return service.addItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto editItem(@RequestBody ItemDto itemDto,
                          @RequestHeader("X-Sharer-User-Id") long userId,
                          @PathVariable long itemId) {
-        final Item item = ItemMapper.toItem(itemDto);
-        return ItemMapper.toItemDto(service.editItem(item, itemId, userId));
+        return service.editItem(itemDto, itemId, userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable long itemId) {
-        return ItemMapper.toItemDto(service.getItemById(itemId));
+    public Item getItemById(@PathVariable long itemId) {
+        return service.getItemById(itemId);
     }
 
     @GetMapping

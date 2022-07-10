@@ -40,9 +40,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto editItem(ItemDto itemDto, long itemId, long userId) {
-        final Item foundedItem = ItemMapper.toItem(getItemById(itemId));
-        log.info(itemDto.toString());
-        log.info(foundedItem.toString());
+        final Item foundedItem = getItemById(itemId);
         final Item item = ItemMapper.toItem(itemDto);
         if (!foundedItem.getOwner().getId().equals(userId)) {
             throw new UserNotFoundException("UserID should be item owner");
@@ -53,10 +51,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemById(long id) {
-        final Item item = repository.getItemById(id).orElseThrow(() ->
+    public Item getItemById(long id) {
+        return repository.getItemById(id).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", id)));
-        return ItemMapper.toItemDto(item);
     }
 
     private Collection<Item> getAllItems() {

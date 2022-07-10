@@ -15,13 +15,13 @@ public class BookingDto {
     private LocalDate end;
     private Item item;
     private Long userId;
-    private Status status;
+    private String status;
 
     public BookingDto(LocalDate start,
                       LocalDate end,
                       String name,
                       Long userId,
-                      Status status) {
+                      String status) {
         this.start = start;
         this.end = end;
         this.item.name = name;

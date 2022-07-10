@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class UserRepositoryInMemory implements UserRepository {
+public class UserRepositoryInMemoryImpl implements UserRepository {
 
     private static final List<User> users = new ArrayList<>();
     private static long userId;

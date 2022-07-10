@@ -2,14 +2,12 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Setter
 @Getter
-@ToString
 public class ItemDto {
 
     private Long id;

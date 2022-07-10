@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
-public class ItemRepositoryInMemory implements ItemRepository {
+public class ItemRepositoryInMemoryImpl implements ItemRepository {
 
     private static final List<Item> items = new ArrayList<>();
     private static long itemId;

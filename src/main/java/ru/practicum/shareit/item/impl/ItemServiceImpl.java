@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.InvalidEntityException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,10 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto addItem(ItemDto itemDto, long userId) {
         final Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userService.getUserById(userId));
+        if (itemDto.getId() != null) {
+            log.error("Item ID should be empty {}", item);
+            throw new InvalidEntityException("Item ID should be empty");
+        }
         final Item addedItem = repository.addItem(item).orElseThrow(() ->
                 new ItemNotFoundException(item.toString()));
         return ItemMapper.toItemDto(addedItem);
@@ -43,6 +49,7 @@ public class ItemServiceImpl implements ItemService {
         final Item foundedItem = getItemById(itemId);
         final Item item = ItemMapper.toItem(itemDto);
         if (!foundedItem.getOwner().getId().equals(userId)) {
+            log.error("UserID not equal item owner");
             throw new UserNotFoundException("UserID should be item owner");
         }
         final Item editedItem = repository.editItem(item, itemId).orElseThrow(() ->
@@ -71,6 +78,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> searchItemsForBooking(String text) {
+        if (text.isEmpty()) {
+            return Collections.emptyList();
+        }
         return repository.searchItemsForBooking(text);
     }
 }

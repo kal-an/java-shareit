@@ -1,18 +1,14 @@
 package ru.practicum.shareit.item;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.InvalidEntityException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.Collections;
 
 @RestController
-@Slf4j
 @RequestMapping("/items")
 public class ItemController {
 
@@ -26,10 +22,6 @@ public class ItemController {
     @PostMapping
     public ItemDto addItem(@Valid @RequestBody ItemDto itemDto,
                         @RequestHeader("X-Sharer-User-Id") long userId) {
-        if (itemDto.getId() != null) {
-            log.error("Item ID should be empty {}", itemDto);
-            throw new InvalidEntityException("Item ID should be empty");
-        }
         return service.addItem(itemDto, userId);
     }
 
@@ -52,9 +44,6 @@ public class ItemController {
 
     @GetMapping("/search")
     Collection<Item> searchItemsForBooking(@RequestParam String text) {
-        if (text.isEmpty()) {
-            return Collections.emptyList();
-        }
         return service.searchItemsForBooking(text);
     }
 }

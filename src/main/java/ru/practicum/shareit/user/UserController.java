@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.InvalidEntityException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
@@ -24,10 +23,6 @@ public class UserController {
 
     @PostMapping
     public UserDto create(@Valid @RequestBody UserDto userDto) {
-        if (userDto.getId() != null) {
-            log.error("User ID should be empty {}", userDto);
-            throw new InvalidEntityException("User ID should be empty");
-        }
         return service.createUser(userDto);
     }
 

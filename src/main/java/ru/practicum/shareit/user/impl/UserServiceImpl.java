@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ConflictEntityException;
+import ru.practicum.shareit.exception.InvalidEntityException;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserRepository;
@@ -27,6 +28,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         final User user = UserMapper.toUser(userDto);
+        if (userDto.getId() != null) {
+            log.error("User ID should be empty {}", user);
+            throw new InvalidEntityException("User ID should be empty");
+        }
         for (User u : userRepository.getAllUsers()) {
             if (u.getEmail().equals(user.getEmail())) {
                 log.error("This email {} already exist", userDto.getEmail());

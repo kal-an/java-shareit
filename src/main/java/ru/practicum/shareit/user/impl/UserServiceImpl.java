@@ -13,6 +13,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(UserDto userDto, Long userId) {
         getUserById(userId);
         final User user = UserMapper.toUser(userDto);
-        for (User u : getAllUsers()) {
+        for (User u : userRepository.getAllUsers()) {
             if (u.getEmail().equals(user.getEmail())
                     && !u.getId().equals(userId)) {
                 log.error("This email {} already exist", user.getEmail());
@@ -58,8 +59,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<User> getAllUsers() {
-        return userRepository.getAllUsers();
+    public Collection<UserDto> getAllUsers() {
+        return userRepository.getAllUsers().stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     public User getUserById(long id) {

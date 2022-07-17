@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -33,7 +32,7 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public Item getItemById(@PathVariable long itemId) {
+    public ItemDto getItemById(@PathVariable long itemId) {
         return service.getItemById(itemId);
     }
 

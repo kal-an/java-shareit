@@ -38,7 +38,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<Item> getAllOwnerItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public Collection<ItemDto> getAllOwnerItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         return service.getAllOwnerItems(userId);
     }
 

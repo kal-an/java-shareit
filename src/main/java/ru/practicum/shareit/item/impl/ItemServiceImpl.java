@@ -78,10 +78,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> searchItemsForBooking(String text) {
+    public List<ItemDto> searchItemsForBooking(String text) {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
-        return repository.searchItemsForBooking(text);
+        return repository.searchItemsForBooking(text).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 }

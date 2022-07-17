@@ -1,34 +1,29 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.requests.model;
 
 import lombok.*;
-import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
 @EqualsAndHashCode
 @ToString
 @RequiredArgsConstructor
-public class Item {
+public class ItemRequest {
 
     private Long id;
-
-    @NotEmpty(message = "Name should not be empty")
-    private String name;
 
     @NotEmpty(message = "Description should not be empty")
     @Size(max = 200, message = "Description should less 200 characters")
     private String description;
 
-    @NotEmpty(message = "Status should not be empty")
-    private Boolean available;
-
     @NotNull(message = "User should not be null")
-    private User owner;
+    private User requestor;
 
-    private ItemRequest request;
+    @NotNull(message = "Created date should not be null")
+    private LocalDateTime created;
 }

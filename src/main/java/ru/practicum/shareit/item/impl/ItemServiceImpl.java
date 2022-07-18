@@ -76,7 +76,7 @@ public class ItemServiceImpl implements ItemService {
         userService.getUserById(userId);
         return getAllItems()
                 .stream()
-                .filter(item -> item.getId().equals(userId))
+                .filter(item -> item.getOwner().equals(userId))
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

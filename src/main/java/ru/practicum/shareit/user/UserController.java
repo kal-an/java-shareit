@@ -8,6 +8,7 @@ import ru.practicum.shareit.user.model.User;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -33,7 +34,7 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<UserDto> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return service.getAllUsers();
     }
 

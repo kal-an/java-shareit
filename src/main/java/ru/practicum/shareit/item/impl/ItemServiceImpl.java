@@ -34,7 +34,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         final Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(userService.getUserById(userId));
+        userService.getUserById(userId);
+        item.setOwner(userId);
         if (itemDto.getId() != null) {
             log.error("Item ID should be empty {}", item);
             throw new InvalidEntityException("Item ID should be empty");
@@ -48,8 +49,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto editItem(ItemDto itemDto, long itemId, long userId) {
         final Item foundedItem = repository.getItemById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", itemId)));
+        userService.getUserById(userId);
         final Item item = ItemMapper.toItem(itemDto);
-        if (!foundedItem.getOwner().getId().equals(userId)) {
+        if (!foundedItem.getOwner().equals(userId)) {
             log.error("UserID not equal item owner");
             throw new UserNotFoundException("UserID should be item owner");
         }
@@ -74,7 +76,7 @@ public class ItemServiceImpl implements ItemService {
         userService.getUserById(userId);
         return getAllItems()
                 .stream()
-                .filter(item -> item.getOwner().getId().equals(userId))
+                .filter(item -> item.getId().equals(userId))
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.model;
 
 import lombok.*;
 import ru.practicum.shareit.requests.model.ItemRequest;
-import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -28,7 +27,7 @@ public class Item {
     private Boolean available;
 
     @NotNull(message = "User should not be null")
-    private User owner;
+    private Long owner;
 
     private ItemRequest request;
 }

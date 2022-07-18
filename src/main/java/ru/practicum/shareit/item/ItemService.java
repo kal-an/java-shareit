@@ -2,7 +2,7 @@ package ru.practicum.shareit.item;
 
 import ru.practicum.shareit.item.dto.ItemDto;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface ItemService {
 
@@ -12,7 +12,7 @@ public interface ItemService {
 
     ItemDto getItemById(long id);
 
-    Collection<ItemDto> getAllOwnerItems(long userId);
+    List<ItemDto> getAllOwnerItems(long userId);
 
-    Collection<ItemDto> searchItemsForBooking(String text);
+    List<ItemDto> searchItemsForBooking(String text);
 }

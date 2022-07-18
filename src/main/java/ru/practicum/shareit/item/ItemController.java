@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.Valid;
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/items")
@@ -37,12 +37,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> getAllOwnerItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDto> getAllOwnerItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         return service.getAllOwnerItems(userId);
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> searchItemsForBooking(@RequestParam String text) {
+    public List<ItemDto> searchItemsForBooking(@RequestParam String text) {
         return service.searchItemsForBooking(text);
     }
 }

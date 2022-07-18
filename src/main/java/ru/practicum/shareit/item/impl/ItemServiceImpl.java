@@ -67,14 +67,10 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(item);
     }
 
-    private Collection<Item> getAllItems() {
-        return repository.getAllItems();
-    }
-
     @Override
     public List<ItemDto> getAllOwnerItems(long userId) {
         userService.getUserById(userId);
-        return getAllItems()
+        return repository.getAllItems()
                 .stream()
                 .filter(item -> item.getOwner().equals(userId))
                 .map(ItemMapper::toItemDto)

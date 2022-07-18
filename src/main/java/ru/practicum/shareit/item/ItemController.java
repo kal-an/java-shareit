@@ -42,7 +42,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    Collection<ItemDto> searchItemsForBooking(@RequestParam String text) {
+    public Collection<ItemDto> searchItemsForBooking(@RequestParam String text) {
         return service.searchItemsForBooking(text);
     }
 }

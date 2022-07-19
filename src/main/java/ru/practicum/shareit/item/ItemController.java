@@ -12,6 +12,7 @@ import java.util.List;
 public class ItemController {
 
     private final ItemService service;
+    private static final String X_HEADER_USER = "X-Sharer-User-Id";
 
     @Autowired
     public ItemController(ItemService service) {
@@ -20,13 +21,13 @@ public class ItemController {
 
     @PostMapping
     public ItemDto addItem(@Valid @RequestBody ItemDto itemDto,
-                        @RequestHeader("X-Sharer-User-Id") long userId) {
+                        @RequestHeader(X_HEADER_USER) long userId) {
         return service.addItem(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto editItem(@RequestBody ItemDto itemDto,
-                         @RequestHeader("X-Sharer-User-Id") long userId,
+                         @RequestHeader(X_HEADER_USER) long userId,
                          @PathVariable long itemId) {
         return service.editItem(itemDto, itemId, userId);
     }
@@ -37,7 +38,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllOwnerItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDto> getAllOwnerItems(@RequestHeader(X_HEADER_USER) long userId) {
         return service.getAllOwnerItems(userId);
     }
 

@@ -2706,6 +2706,72 @@
           "response": []
         },
         {
+          "name": "Booking create failed by end before start",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400]);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var moment = require('moment');\r",
+                  "\r",
+                  "var start = moment().add(2, 'd');\r",
+                  "var end = moment().add(1, 'd');\r",
+                  "pm.environment.set('start', start.format('YYYY-MM-DDTHH:mm:ss'));\r",
+                  "pm.environment.set('end', end.format('YYYY-MM-DDTHH:mm:ss'));\r",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Sharer-User-Id",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"itemId\": 2,\n    \"start\": \"{{start}}\",\n    \"end\": \"{{end}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "bookings"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Booking create failed by start in past",
           "event": [
             {
@@ -3669,6 +3735,17 @@
                 ],
                 "type": "text/javascript"
               }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var time = setTimeout(function(){}, 3000);\r",
+                  "// var t = new Date().getTime();\r",
+                  "// while (new Date().getTime() < t + 3000);"
+                ],
+                "type": "text/javascript"
+              }
             }
           ],
           "request": {
@@ -3899,9 +3976,7 @@
               "listen": "prerequest",
               "script": {
                 "exec": [
-                  "var time = setTimeout(function(){}, 3000);\r",
-                  "// var t = new Date().getTime();\r",
-                  "// while (new Date().getTime() < t + 3000);"
+                  ""
                 ],
                 "type": "text/javascript"
               }
@@ -4270,7 +4345,7 @@
                   "var moment = require('moment');\r",
                   "\r",
                   "var start = moment().add(10, 'd');\r",
-                  "var end = moment().add(1, 'd')\r",
+                  "var end = moment().add(11, 'd')\r",
                   "pm.environment.set('start', start.format('YYYY-MM-DDTHH:mm:ss'));\r",
                   "pm.environment.set('end', end.format('YYYY-MM-DDTHH:mm:ss'));\r",
                   ""

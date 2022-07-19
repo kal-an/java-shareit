@@ -30,13 +30,13 @@ public class Item {
     @Column(name = "description", nullable = false, length = 4000)
     private String description;
 
-    @NotEmpty(message = "Status should not be empty")
+    @NotNull(message = "Status should not be empty")
     private Boolean available;
 
     @NotNull(message = "User should not be null")
     @Column(name = "owner_id", nullable = false)
     private Long owner;
 
-    @Column(name = "request_id")
+    @Transient
     private ItemRequest request;
 }

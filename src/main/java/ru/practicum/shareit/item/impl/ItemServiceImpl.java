@@ -13,7 +13,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,29 +39,31 @@ public class ItemServiceImpl implements ItemService {
             log.error("Item ID should be empty {}", item);
             throw new InvalidEntityException("Item ID should be empty");
         }
-        final Item addedItem = repository.addItem(item).orElseThrow(() ->
-                new ItemNotFoundException(item.toString()));
-        return ItemMapper.toItemDto(addedItem);
+        final Item saveItemInDb = repository.save(item);
+        log.info("Item {} saved", saveItemInDb);
+        return ItemMapper.toItemDto(saveItemInDb);
     }
 
     @Override
     public ItemDto editItem(ItemDto itemDto, long itemId, long userId) {
-        final Item foundedItem = repository.getItemById(itemId).orElseThrow(() ->
+        final Item itemInDb = repository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", itemId)));
         userService.getUserById(userId);
-        final Item item = ItemMapper.toItem(itemDto);
-        if (!foundedItem.getOwner().equals(userId)) {
+        if (!itemInDb.getOwner().equals(userId)) {
             log.error("UserID not equal item owner");
             throw new UserNotFoundException("UserID should be item owner");
         }
-        final Item editedItem = repository.editItem(item, itemId).orElseThrow(() ->
-                new ItemNotFoundException(item.toString()));
-        return ItemMapper.toItemDto(editedItem);
+        if (itemDto.getAvailable() != null) itemInDb.setAvailable(itemDto.getAvailable());
+        if (itemDto.getName() != null) itemInDb.setName(itemDto.getName());
+        if (itemDto.getDescription() != null) itemInDb.setDescription(itemDto.getDescription());
+        final Item updateItemInDb = repository.save(itemInDb);
+        log.info("Item {} updated", updateItemInDb);
+        return ItemMapper.toItemDto(updateItemInDb);
     }
 
     @Override
     public ItemDto getItemById(long id) {
-        final Item item = repository.getItemById(id).orElseThrow(() ->
+        final Item item = repository.findById(id).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", id)));
         return ItemMapper.toItemDto(item);
     }
@@ -70,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getAllOwnerItems(long userId) {
         userService.getUserById(userId);
-        return repository.getAllItems()
+        return repository.findAll()
                 .stream()
                 .filter(item -> item.getOwner().equals(userId))
                 .map(ItemMapper::toItemDto)
@@ -82,7 +83,10 @@ public class ItemServiceImpl implements ItemService {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
-        return repository.searchItemsForBooking(text).stream()
+        return repository.findAll().stream()
+                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase())
+                        || item.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .filter(Item::getAvailable)
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

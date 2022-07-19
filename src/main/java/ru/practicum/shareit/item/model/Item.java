@@ -22,11 +22,12 @@ public class Item {
     private Long id;
 
     @NotEmpty(message = "Name should not be empty")
+    @Size(max = 255, message = "Name should less 255 characters")
     @Column(name = "name", nullable = false)
     private String name;
 
     @NotEmpty(message = "Description should not be empty")
-    @Size(max = 200, message = "Description should less 200 characters")
+    @Size(max = 4000, message = "Description should less 4000 characters")
     @Column(name = "description", nullable = false, length = 4000)
     private String description;
 

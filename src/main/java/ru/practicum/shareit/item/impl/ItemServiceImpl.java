@@ -83,10 +83,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isEmpty()) {
             return Collections.emptyList();
         }
-        return repository.findAll().stream()
-                .filter(item -> item.getName().toLowerCase().contains(text.toLowerCase())
-                        || item.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .filter(Item::getAvailable)
+        return repository.searchItemsForBooking(text).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

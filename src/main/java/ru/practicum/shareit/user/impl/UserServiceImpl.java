@@ -33,12 +33,6 @@ public class UserServiceImpl implements UserService {
             log.error("User ID should be empty {}", user);
             throw new InvalidEntityException("User ID should be empty");
         }
-        for (User u : userRepository.findAll()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                log.error("This email {} already exist", userDto.getEmail());
-                throw new ConflictEntityException("This email already exist");
-            }
-        }
         final User savedUserInDb = userRepository.save(user);
         log.info("User {} saved", savedUserInDb);
         return UserMapper.toUserDto(savedUserInDb);
@@ -48,13 +42,6 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(UserDto userDto, Long userId) {
         final User userInDb = userRepository.findById(userId).orElseThrow(() ->
                 new UserNotFoundException(String.format("User with ID %d not found", userId)));
-        for (User u : userRepository.findAll()) {
-            if (u.getEmail().equals(userInDb.getEmail())
-                    && !u.getId().equals(userId)) {
-                log.error("This email {} already exist", userInDb.getEmail());
-                throw new ConflictEntityException("This email already exist");
-            }
-        }
         if (userDto.getName() != null) userInDb.setName(userDto.getName());
         if (userDto.getEmail() != null) userInDb.setEmail(userDto.getEmail());
         final User updatedUserInDb = userRepository.save(userInDb);

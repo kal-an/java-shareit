@@ -69,11 +69,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllOwnerItems(long userId) {
-        userService.getUserById(userId);
-        return repository.findAll()
-                .stream()
-                .filter(item -> item.getOwner().equals(userId))
+    public List<ItemDto> getAllOwnerItems(long ownerId) {
+        userService.getUserById(ownerId);
+        return repository.findAllItemsByOwner(ownerId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

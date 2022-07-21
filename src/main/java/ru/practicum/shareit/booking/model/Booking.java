@@ -1,34 +1,40 @@
 package ru.practicum.shareit.booking.model;
 
 import lombok.*;
-import ru.practicum.shareit.booking.Status;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
 @EqualsAndHashCode
 @ToString
 @RequiredArgsConstructor
+@Entity
+@Table(name = "bookings", schema = "public")
 public class Booking {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull(message = "Start date should not be null")
-    private LocalDate start;
+    @Column(name = "start_date_time", nullable = false)
+    private LocalDateTime start;
 
     @NotNull(message = "End date should not be null")
-    private LocalDate end;
+    @Column(name = "end_date_time", nullable = false)
+    private LocalDateTime end;
 
-    @NotNull(message = "Item should not be null")
-    private Item item;
+    @Column(name = "item_id", nullable = false)
+    private Long itemId;
 
-    @NotNull(message = "Booker should not be null")
-    private User booker;
+    @NotNull(message = "Booker ID should not be null")
+    @Column(name = "booker_id", nullable = false)
+    private Long bookerId;
 
-    @NotNull(message = "Status should not be null")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private Status status;
 }

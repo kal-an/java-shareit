@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @AllArgsConstructor
-public class BookingShortDto {
+public class BookingCreationDto {
 
     @NotNull(message = "Start date should not be null")
     private LocalDateTime start;

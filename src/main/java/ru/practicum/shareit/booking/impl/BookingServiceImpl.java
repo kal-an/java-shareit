@@ -9,7 +9,7 @@ import ru.practicum.shareit.booking.BookingNotFoundException;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.model.Status;
@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto addBooking(BookingShortDto bookingDto, long bookerId) {
+    public BookingDto addBooking(BookingCreationDto bookingDto, long bookerId) {
         final UserDto bookerDto = userService.getUserById(bookerId);
         final ItemDto itemDto = itemService.getItemById(bookingDto.getItemId());
         final Booking booking = BookingMapper.toBooking(bookingDto);

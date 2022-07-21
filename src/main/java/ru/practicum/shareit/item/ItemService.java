@@ -15,4 +15,5 @@ public interface ItemService {
     List<ItemDto> getAllOwnerItems(long userId);
 
     List<ItemDto> searchItemsForBooking(String text);
+
 }

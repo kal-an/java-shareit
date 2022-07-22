@@ -4,9 +4,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.item.dto.DateBooking;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -33,5 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByItemIdInAndStatus(List<Long> itemIds, Status status, Sort sort);
 
     List<Booking> findByItemIdIn(List<Long> itemIds, Sort sort);
+
+    List<Booking> findByItemId(long itemId);
 
 }

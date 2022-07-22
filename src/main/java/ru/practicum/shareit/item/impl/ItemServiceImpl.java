@@ -3,16 +3,22 @@ package ru.practicum.shareit.item.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.InvalidEntityException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.item.dto.DateBooking;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoExtended;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +29,15 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
     private final UserService userService;
+    private final BookingRepository bookingRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository repository, UserService userService) {
+    public ItemServiceImpl(ItemRepository repository,
+                           UserService userService,
+                           BookingRepository bookingRepository) {
         this.repository = repository;
         this.userService = userService;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -62,23 +72,61 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemById(long id) {
+    public ItemDtoExtended getItemById(long id, long userId) {
         final Item item = repository.findById(id).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", id)));
-        return ItemMapper.toItemDto(item);
+        final ItemDtoExtended dtoExtended = new ItemDtoExtended(ItemMapper.toItemDto(item));
+        if (item.getOwner().equals(userId)) {
+            List<Booking> bookings = bookingRepository.findByItemId(id);
+            for (Booking booking : bookings) {
+                setBookingDates(booking, dtoExtended);
+            }
+        }
+        return dtoExtended;
     }
 
     @Override
-    public List<ItemDto> getAllOwnerItems(long ownerId) {
+    public List<ItemDtoExtended> getAllOwnerItems(long ownerId) {
         userService.getUserById(ownerId);
-        return repository.findAllItemsByOwner(ownerId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        final List<ItemDtoExtended> itemDtoExtendedList = new ArrayList<>();
+        final List<Item> items = repository.findAllItemsByOwner(ownerId);
+        for (Item item : items) {
+            final List<Booking> bookings = bookingRepository.findByItemId(item.getId());
+            for (Booking booking : bookings) {
+                final ItemDtoExtended dtoExtended = new ItemDtoExtended(ItemMapper.toItemDto(item));
+                setBookingDates(booking, dtoExtended);
+                itemDtoExtendedList.add(dtoExtended);
+                log.info(String.valueOf(dtoExtended));
+            }
+        }
+        return itemDtoExtendedList;
+//        return repository.findAllItemsByOwner(ownerId).stream()
+//                .map(ItemMapper::toItemDto)
+//                .map(ItemDtoExtended::new)
+//                .collect(Collectors.toList());
+    }
+
+    private void setBookingDates(Booking booking, ItemDtoExtended dtoExtended) {
+        if (LocalDateTime.now().isAfter(booking.getEnd())) {
+            dtoExtended.setLastBooking(new DateBooking(
+                    booking.getId(),
+                    booking.getBookerId(),
+                    booking.getStart(),
+                    booking.getEnd()));
+        }
+        if (LocalDateTime.now().isBefore(booking.getStart())) {
+            dtoExtended.setNextBooking(new DateBooking(
+                    booking.getId(),
+                    booking.getBookerId(),
+                    booking.getStart(),
+                    booking.getEnd()));
+        }
     }
 
     @Override
     public List<ItemDto> searchItemsForBooking(String text) {
         if (text.isEmpty()) {
+            log.info("Input search text is empty");
             return Collections.emptyList();
         }
         return repository.searchItemsForBooking(text).stream()

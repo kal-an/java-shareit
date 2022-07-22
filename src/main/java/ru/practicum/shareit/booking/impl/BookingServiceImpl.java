@@ -44,7 +44,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto addBooking(BookingCreationDto bookingDto, long bookerId) {
         final UserDto bookerDto = userService.getUserById(bookerId);
-        final ItemDto itemDto = itemService.getItemById(bookingDto.getItemId());
+        final ItemDto itemDto = itemService.getItemById(bookingDto.getItemId(), bookerId);
         final Booking booking = BookingMapper.toBooking(bookingDto);
         booking.setItemId(itemDto.getId());
         booking.setBookerId(bookerId);
@@ -53,7 +53,8 @@ public class BookingServiceImpl implements BookingService {
             log.error("Item with ID {} not available for booking", itemDto.getId());
             throw new InvalidEntityException("Item not available for booking");
         }
-        if (bookingDto.getStart().isBefore(LocalDateTime.now())) {
+        if (bookingDto.getStart().isBefore(LocalDateTime.now())
+                || bookingDto.getStart().isAfter(bookingDto.getEnd())) {
             log.error("Date not valid for booking");
             throw new InvalidEntityException("Date not valid for booking");
         }
@@ -76,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
         final Booking bookingInDb = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new BookingNotFoundException(String.format("Booking with ID %d not found", bookingId)));
         userService.getUserById(ownerId);
-        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItemId());
+        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItemId(), ownerId);
         final UserDto bookerDto = userService.getUserById(bookingInDb.getBookerId());
         if (!itemDto.getOwnerId().equals(ownerId)) {
             log.error("UserID not equal item owner");
@@ -105,7 +106,7 @@ public class BookingServiceImpl implements BookingService {
         final Booking bookingInDb = bookingRepository.findById(id).orElseThrow(() ->
                 new BookingNotFoundException(String.format("Booking with ID %d not found", id)));
         final BookingDto convertToDto = BookingMapper.toBookingDto(bookingInDb);
-        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItemId());
+        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItemId(), userId);
         final UserDto bookerDto = userService.getUserById(bookingInDb.getBookerId());
         if (!bookingInDb.getBookerId().equals(userId) && !itemDto.getOwnerId().equals(userId)) {
             log.error("BookingID {} not found for UserID {}", id, userId);
@@ -185,7 +186,7 @@ public class BookingServiceImpl implements BookingService {
         final List<BookingDto> bookingDtoList = new ArrayList<>();
         for (Booking booking : bookings) {
             final BookingDto convertToDto = BookingMapper.toBookingDto(booking);
-            final ItemDto itemDto = itemService.getItemById(booking.getItemId());
+            final ItemDto itemDto = itemService.getItemById(booking.getItemId(), booking.getBookerId());
             final UserDto bookerDto = userService.getUserById(booking.getBookerId());
             convertToDto.setItem(itemDto);
             convertToDto.setBooker(bookerDto);

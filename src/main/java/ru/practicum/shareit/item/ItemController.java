@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentCreationDto;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
 
@@ -47,5 +49,18 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> searchItemsForBooking(@RequestParam String text) {
         return service.searchItemsForBooking(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader(X_HEADER_USER) long userId,
+                                                  @PathVariable long itemId,
+                                                  @Valid @RequestBody CommentCreationDto text) {
+        return service.addComment(userId, itemId, text);
+    }
+
+    @GetMapping("/{itemId}/comment")
+    public List<CommentDto> searchCommentsForItem(@PathVariable long itemId,
+                                                  @RequestParam String text) {
+        return service.searchCommentsForItem(itemId, text);
     }
 }

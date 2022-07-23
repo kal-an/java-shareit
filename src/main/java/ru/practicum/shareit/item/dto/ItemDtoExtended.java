@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Setter
 @Getter
@@ -14,6 +15,8 @@ public class ItemDtoExtended extends ItemDto {
 
     @NotNull(message = "Next booking should not be empty")
     private DateBooking nextBooking;
+
+    private List<CommentDto> comments;
 
     public ItemDtoExtended(ItemDto itemDto) {
         super(itemDto.getId(), itemDto.getName(), itemDto.getDescription(),

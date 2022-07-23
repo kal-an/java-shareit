@@ -6,10 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.InvalidEntityException;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.ItemNotFoundException;
-import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.item.*;
+import ru.practicum.shareit.item.dto.CommentCreationDto;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.DateBooking;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
@@ -28,14 +27,16 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
+    private final CommentRepository commentRepository;
     private final UserService userService;
     private final BookingRepository bookingRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository repository,
-                           UserService userService,
-                           BookingRepository bookingRepository) {
+                           CommentRepository commentRepository,
+                           UserService userService) {
         this.repository = repository;
+        this.commentRepository = commentRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
     }
@@ -126,11 +127,28 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> searchItemsForBooking(String text) {
         if (text.isEmpty()) {
-            log.info("Input search text is empty");
+            log.info("Text is empty");
             return Collections.emptyList();
         }
         return repository.searchItemsForBooking(text).stream()
                 .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentDto addComment(long userId, long itemId,
+                                 CommentCreationDto text) {
+        return null;
+    }
+
+    @Override
+    public List<CommentDto> searchCommentsForItem(long itemId, String text) {
+        if (text.isEmpty()) {
+            log.info("Text is empty");
+            return Collections.emptyList();
+        }
+        return commentRepository.findCommentsByItemIdAndTextContains(itemId, text).stream()
+                .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
     }
 }

@@ -8,8 +8,8 @@ public class CommentMapper {
     public static CommentDto toCommentDto(Comment comment) {
         return new CommentDto(
                 comment.getId(),
-                comment.getAuthor().getName(),
                 comment.getText(),
+                comment.getAuthorName(),
                 comment.getCreated());
     }
 }

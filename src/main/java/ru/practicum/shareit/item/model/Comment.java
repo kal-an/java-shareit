@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @ToString
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "comments", schema = "public")
 public class Comment {
 
@@ -26,15 +28,25 @@ public class Comment {
     @Column(name = "text", nullable = false, length = 4000)
     private String text;
 
-    @NotNull(message = "Item should not be empty")
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
-    private Item item;
+    @NotNull(message = "Item ID should not be empty")
+    @Column(name = "item_id")
+    private Long itemId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "author_id")
-    private User author;
+    @NotNull(message = "Author ID should not be empty")
+    @Column(name = "author_id")
+    private Long authorId;
+
+    @NotNull(message = "Author name should not be empty")
+    @Transient
+    private String authorName;
 
     @NotNull(message = "Created date should not be null")
     private LocalDateTime created = LocalDateTime.now();
+
+    public Comment(String text, Long itemId, Long authorId, String authorName) {
+        this.text = text;
+        this.itemId = itemId;
+        this.authorId = authorId;
+        this.authorName = authorName;
+    }
 }

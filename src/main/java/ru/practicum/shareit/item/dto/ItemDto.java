@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -11,6 +12,7 @@ import javax.validation.constraints.Size;
 @Setter
 @Getter
 @ToString
+@AllArgsConstructor
 public class ItemDto {
 
     private Long id;
@@ -25,20 +27,9 @@ public class ItemDto {
 
     @NotNull(message = "Available should not be empty")
     private Boolean available;
+
     private Long ownerId;
+
     private Long requestId;
 
-    public ItemDto(Long id,
-                   String name,
-                   String description,
-                   Boolean available,
-                   Long ownerId,
-                   Long requestId) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.ownerId = ownerId;
-        this.requestId = requestId;
-    }
 }

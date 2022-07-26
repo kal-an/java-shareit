@@ -9,7 +9,7 @@ public class CommentMapper {
         return new CommentDto(
                 comment.getId(),
                 comment.getText(),
-                comment.getAuthorName(),
+                comment.getAuthor().getName(),
                 comment.getCreated());
     }
 }

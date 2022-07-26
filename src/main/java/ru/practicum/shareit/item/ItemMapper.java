@@ -11,16 +11,17 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
-                item.getOwner(),
+                item.getOwner().getId(),
                 item.getRequest() != null ? item.getRequest().getId() : null
         );
     }
 
     public static Item toItem(ItemDto itemDto) {
-        final Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        return item;
+        return Item.builder()
+                .id(itemDto.getId())
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable())
+                .build();
     }
 }

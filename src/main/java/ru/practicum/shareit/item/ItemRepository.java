@@ -14,5 +14,5 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "and i.available is true")
     List<Item> searchItemsForBooking(String text);
 
-    List<Item> findAllItemsByOwner(long ownerId);
+    List<Item> findItemsByOwnerId(long ownerId);
 }

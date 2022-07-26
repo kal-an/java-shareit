@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Table(name = "comments", schema = "public")
 public class Comment {
 
@@ -27,25 +29,22 @@ public class Comment {
     @Column(name = "text", nullable = false, length = 4000)
     private String text;
 
-    @NotNull(message = "Item ID should not be empty")
-    @Column(name = "item_id")
-    private Long itemId;
+    @NotNull(message = "Item should not be empty")
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
-    @NotNull(message = "Author ID should not be empty")
-    @Column(name = "author_id")
-    private Long authorId;
-
-    @NotNull(message = "Author name should not be empty")
-    @Transient
-    private String authorName;
+    @NotNull(message = "Author should not be empty")
+    @OneToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
     @NotNull(message = "Created date should not be null")
     private LocalDateTime created = LocalDateTime.now();
 
-    public Comment(String text, Long itemId, Long authorId, String authorName) {
+    public Comment(String text, Item item, User author) {
         this.text = text;
-        this.itemId = itemId;
-        this.authorId = authorId;
-        this.authorName = authorName;
+        this.item = item;
+        this.author = author;
     }
 }

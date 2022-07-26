@@ -2,13 +2,17 @@ package ru.practicum.shareit.item.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.InvalidEntityException;
 import ru.practicum.shareit.item.*;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentCreationDto;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoExtended;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserMapper;
@@ -46,8 +50,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         final Item item = ItemMapper.toItem(itemDto);
-        userService.getUserById(userId);
-        item.setOwner(userId);
+        final User user = UserMapper.toUser(userService.getUserById(userId));
+        item.setOwner(user);
         if (itemDto.getId() != null) {
             log.error("Item ID should be empty {}", item);
             throw new InvalidEntityException("Item ID should be empty");
@@ -62,7 +66,7 @@ public class ItemServiceImpl implements ItemService {
         final Item itemInDb = repository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", itemId)));
         userService.getUserById(userId);
-        if (!itemInDb.getOwner().equals(userId)) {
+        if (!itemInDb.getOwner().getId().equals(userId)) {
             log.error("UserID not equal item owner");
             throw new UserNotFoundException("UserID should be item owner");
         }
@@ -81,17 +85,20 @@ public class ItemServiceImpl implements ItemService {
                 new ItemNotFoundException(String.format("Item with ID %d not found", id)));
         final ItemDtoExtended dtoExtended = new ItemDtoExtended(ItemMapper.toItemDto(item));
         LocalDateTime now = LocalDateTime.now();
-        if (item.getOwner().equals(userId)) {
-            List<Booking> lastBookingList = bookingRepository
-                    .findByItemIdAndEndBeforeOrderByEndDesc(id, now);
-            List<Booking> nextBookingList = bookingRepository
-                    .findByItemIdAndStartAfterOrderByEndDesc(id, now);
-            setBookingDates(lastBookingList, nextBookingList, dtoExtended);
+        if (item.getOwner().getId().equals(userId)) {
+            List<Booking> bookings = bookingRepository.findByItemIdOrderByEndDesc(id);
+            Booking lastBooking = bookings.stream()
+                    .filter(booking -> booking.getEnd().isBefore(now))
+                    .findFirst().orElse(null);
+            Booking nextBooking = bookings.stream()
+                    .filter(booking -> booking.getStart().isAfter(now))
+                    .findFirst().orElse(null);
+            setBookingDates(lastBooking, nextBooking, dtoExtended);
         }
         List<Comment> comments = commentRepository.findAllByItemId(id);
         for (Comment comment : comments) {
-            final UserDto user = userService.getUserById(comment.getAuthorId());
-            comment.setAuthorName(user.getName());
+            final UserDto userDto = userService.getUserById(comment.getAuthor().getId());
+            comment.setAuthor(UserMapper.toUser(userDto));
         }
         dtoExtended.setComments(comments.stream()
                 .map(CommentMapper::toCommentDto)
@@ -103,19 +110,29 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDtoExtended> getAllOwnerItems(long ownerId) {
         userService.getUserById(ownerId);
         final List<ItemDtoExtended> itemDtoExtendedList = new ArrayList<>();
-        final List<Item> items = repository.findAllItemsByOwner(ownerId);
+        final List<Item> items = repository.findItemsByOwnerId(ownerId);
         LocalDateTime now = LocalDateTime.now();
+        Sort sort = Sort.by(Sort.Direction.DESC, "end");
+        List<Booking> allBookings = bookingRepository.findByItemIdIn(items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList()), sort);
         for (Item item : items) {
-            List<Booking> lastBookingList = bookingRepository
-                    .findByItemIdAndEndBeforeOrderByEndDesc(item.getId(), now);
-            List<Booking> nextBookingList = bookingRepository
-                    .findByItemIdAndStartAfterOrderByEndDesc(item.getId(), now);
+            Booking lastBooking = allBookings.stream()
+                    .filter(booking -> booking.getEnd().isBefore(now)
+                            && booking.getItem().getId().equals(item.getId()))
+                    .findFirst().orElse(null);
+            Booking nextBooking = allBookings.stream()
+                    .filter(booking -> booking.getStart().isAfter(now)
+                            && booking.getItem().getId().equals(item.getId()))
+                    .findFirst().orElse(null);
             final ItemDtoExtended dtoExtended = new ItemDtoExtended(ItemMapper.toItemDto(item));
-            setBookingDates(lastBookingList, nextBookingList, dtoExtended);
+
+            setBookingDates(lastBooking, nextBooking, dtoExtended);
+
             List<Comment> comments = commentRepository.findAllByItemId(item.getId());
             for (Comment comment : comments) {
-                final UserDto user = userService.getUserById(comment.getAuthorId());
-                comment.setAuthorName(user.getName());
+                final UserDto userDto = userService.getUserById(comment.getAuthor().getId());
+                comment.setAuthor(UserMapper.toUser(userDto));
             }
             dtoExtended.setComments(comments.stream()
                     .map(CommentMapper::toCommentDto)
@@ -125,23 +142,24 @@ public class ItemServiceImpl implements ItemService {
         return itemDtoExtendedList;
     }
 
-    private void setBookingDates(List<Booking> lastBookingList, List<Booking> nextBookingList,
+    private void setBookingDates(Booking lastBooking,
+                                 Booking nextBooking,
                                  ItemDtoExtended dtoExtended) {
-        if (!lastBookingList.isEmpty()) {
-            dtoExtended.setLastBooking(new DateBooking(
-                    lastBookingList.get(0).getId(),
-                    lastBookingList.get(0).getBookerId(),
-                    lastBookingList.get(0).getStart(),
-                    lastBookingList.get(0).getEnd()
-            ));
+        if (lastBooking != null) {
+            dtoExtended.setLastBooking(ItemDtoExtended.DateBooking.builder()
+                    .id(lastBooking.getId())
+                    .bookerId(lastBooking.getBooker().getId())
+                    .start(lastBooking.getStart())
+                    .end(lastBooking.getEnd())
+                    .build());
         }
-        if (!nextBookingList.isEmpty()) {
-            dtoExtended.setNextBooking(new DateBooking(
-                    nextBookingList.get(0).getId(),
-                    nextBookingList.get(0).getBookerId(),
-                    nextBookingList.get(0).getStart(),
-                    nextBookingList.get(0).getEnd()
-            ));
+        if (nextBooking != null) {
+            dtoExtended.setNextBooking(ItemDtoExtended.DateBooking.builder()
+                    .id(nextBooking.getId())
+                    .bookerId(nextBooking.getBooker().getId())
+                    .start(nextBooking.getStart())
+                    .end(nextBooking.getEnd())
+                    .build());
         }
     }
 
@@ -171,7 +189,7 @@ public class ItemServiceImpl implements ItemService {
             throw new InvalidEntityException("User can't leave comment");
         }
         final Comment savedCommentInDb = commentRepository.save(
-                new Comment(textDto.getText(), itemId, userId, user.getName()));
+                new Comment(textDto.getText(), item, user));
         log.info("Comment {} saved", savedCommentInDb);
         return CommentMapper.toCommentDto(savedCommentInDb);
     }

@@ -8,19 +8,20 @@ import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingNotFoundException;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.exception.InvalidEntityException;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,19 +43,23 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto addBooking(BookingCreationDto bookingDto, long bookerId) {
+    public BookingDto addBooking(BookingCreationDto creationDto, long bookerId) {
         final UserDto bookerDto = userService.getUserById(bookerId);
-        final ItemDto itemDto = itemService.getItemById(bookingDto.getItemId(), bookerId);
-        final Booking booking = BookingMapper.toBooking(bookingDto);
-        booking.setItemId(itemDto.getId());
-        booking.setBookerId(bookerId);
+        final ItemDto itemDto = itemService.getItemById(creationDto.getItemId(), bookerId);
+        final Booking booking = BookingMapper.toBooking(
+                BookingDto.builder()
+                        .start(creationDto.getStart())
+                        .end(creationDto.getEnd())
+                        .build());
+        booking.setItem(ItemMapper.toItem(itemDto));
+        booking.setBooker(UserMapper.toUser(bookerDto));
         booking.setStatus(Status.WAITING);
         if (!itemDto.getAvailable()) {
             log.error("Item with ID {} not available for booking", itemDto.getId());
             throw new InvalidEntityException("Item not available for booking");
         }
-        if (bookingDto.getStart().isBefore(LocalDateTime.now())
-                || bookingDto.getStart().isAfter(bookingDto.getEnd())) {
+        if (creationDto.getStart().isBefore(LocalDateTime.now())
+                || creationDto.getStart().isAfter(creationDto.getEnd())) {
             log.error("Date not valid for booking");
             throw new InvalidEntityException("Date not valid for booking");
         }
@@ -64,10 +69,7 @@ public class BookingServiceImpl implements BookingService {
         }
         final Booking savedBookingInDb = bookingRepository.save(booking);
         log.info("Booking {} saved", savedBookingInDb);
-        final BookingDto convertToDto = BookingMapper.toBookingDto(savedBookingInDb);
-        convertToDto.setItem(itemDto);
-        convertToDto.setBooker(bookerDto);
-        return convertToDto;
+        return BookingMapper.toBookingDto(savedBookingInDb);
     }
 
     @Override
@@ -77,8 +79,7 @@ public class BookingServiceImpl implements BookingService {
         final Booking bookingInDb = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new BookingNotFoundException(String.format("Booking with ID %d not found", bookingId)));
         userService.getUserById(ownerId);
-        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItemId(), ownerId);
-        final UserDto bookerDto = userService.getUserById(bookingInDb.getBookerId());
+        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItem().getId(), ownerId);
         if (!itemDto.getOwnerId().equals(ownerId)) {
             log.error("UserID not equal item owner");
             throw new BookingNotFoundException(String.format("Booking with ID %d not found", bookingId));
@@ -94,10 +95,7 @@ public class BookingServiceImpl implements BookingService {
         bookingInDb.setStatus(approved ? Status.APPROVED : Status.REJECTED);
         final Booking updateBookingInDb = bookingRepository.save(bookingInDb);
         log.info("Booking {} updated", updateBookingInDb);
-        final BookingDto convertToDto = BookingMapper.toBookingDto(updateBookingInDb);
-        convertToDto.setItem(itemDto);
-        convertToDto.setBooker(bookerDto);
-        return convertToDto;
+        return BookingMapper.toBookingDto(updateBookingInDb);
     }
 
     @Override
@@ -106,14 +104,12 @@ public class BookingServiceImpl implements BookingService {
         final Booking bookingInDb = bookingRepository.findById(id).orElseThrow(() ->
                 new BookingNotFoundException(String.format("Booking with ID %d not found", id)));
         final BookingDto convertToDto = BookingMapper.toBookingDto(bookingInDb);
-        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItemId(), userId);
-        final UserDto bookerDto = userService.getUserById(bookingInDb.getBookerId());
-        if (!bookingInDb.getBookerId().equals(userId) && !itemDto.getOwnerId().equals(userId)) {
+        final ItemDto itemDto = itemService.getItemById(bookingInDb.getItem().getId(), userId);
+        if (!bookingInDb.getBooker().getId().equals(userId)
+                && !itemDto.getOwnerId().equals(userId)) {
             log.error("BookingID {} not found for UserID {}", id, userId);
             throw new BookingNotFoundException(String.format("Booking with ID %d not found", id));
         }
-        convertToDto.setItem(itemDto);
-        convertToDto.setBooker(bookerDto);
         return convertToDto;
     }
 
@@ -143,7 +139,7 @@ public class BookingServiceImpl implements BookingService {
             default:
                 bookings = bookingRepository.findByBookerId(userId, sort);
         }
-        return convertToListDto(bookings);
+        return BookingMapper.convertToListDto(bookings);
     }
 
     @Override
@@ -179,19 +175,6 @@ public class BookingServiceImpl implements BookingService {
             default:
                 bookings = bookingRepository.findByItemIdIn(itemList, sort);
         }
-        return convertToListDto(bookings);
-    }
-
-    private List<BookingDto> convertToListDto(List<Booking> bookings) {
-        final List<BookingDto> bookingDtoList = new ArrayList<>();
-        for (Booking booking : bookings) {
-            final BookingDto convertToDto = BookingMapper.toBookingDto(booking);
-            final ItemDto itemDto = itemService.getItemById(booking.getItemId(), booking.getBookerId());
-            final UserDto bookerDto = userService.getUserById(booking.getBookerId());
-            convertToDto.setItem(itemDto);
-            convertToDto.setBooker(bookerDto);
-            bookingDtoList.add(convertToDto);
-        }
-        return bookingDtoList;
+        return BookingMapper.convertToListDto(bookings);
     }
 }

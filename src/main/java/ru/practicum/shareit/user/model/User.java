@@ -11,7 +11,9 @@ import javax.validation.constraints.Size;
 @Getter
 @EqualsAndHashCode
 @ToString
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "users", schema = "public")
 public class User {

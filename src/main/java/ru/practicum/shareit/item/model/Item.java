@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.model;
 
 import lombok.*;
 import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -12,7 +13,9 @@ import javax.validation.constraints.Size;
 @Getter
 @EqualsAndHashCode
 @ToString
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Entity
 @Table(name = "items", schema = "public")
 public class Item {
@@ -35,8 +38,9 @@ public class Item {
     private Boolean available;
 
     @NotNull(message = "User should not be null")
-    @Column(name = "owner_id", nullable = false)
-    private Long owner;
+    @OneToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
     @Transient
     private ItemRequest request;

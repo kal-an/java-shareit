@@ -1,7 +1,6 @@
 package ru.practicum.shareit.booking.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,10 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @AllArgsConstructor
-@Builder
-public class BookingDto {
-
-    private Long id;
+public class BookingCreationDto {
 
     @NotNull(message = "Start date should not be null")
     private LocalDateTime start;
@@ -22,22 +18,7 @@ public class BookingDto {
     @NotNull(message = "End date should not be null")
     private LocalDateTime end;
 
-    private Item item;
+    @NotNull(message = "Item ID should not be null")
+    private Long itemId;
 
-    private User booker;
-
-    private String status;
-
-    @Getter
-    @Setter
-    public static class Item {
-        private Long id;
-        private String name;
-    }
-
-    @Getter
-    @Setter
-    public static class User {
-        private Long id;
-    }
 }

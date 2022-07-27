@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.practicum.shareit.booking.model.Status;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -27,7 +26,7 @@ public class BookingDto {
 
     private User booker;
 
-    private Status status;
+    private String status;
 
     @Getter
     @Setter

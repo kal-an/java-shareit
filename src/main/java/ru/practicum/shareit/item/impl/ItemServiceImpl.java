@@ -24,6 +24,7 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -139,7 +140,9 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList()));
             itemDtoExtendedList.add(dtoExtended);
         }
-        return itemDtoExtendedList;
+        return itemDtoExtendedList.stream()
+                .sorted(Comparator.comparing(ItemDto::getId))
+                .collect(Collectors.toList());
     }
 
     private void setBookingDates(Booking lastBooking,

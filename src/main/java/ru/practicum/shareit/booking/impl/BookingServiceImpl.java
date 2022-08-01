@@ -22,6 +22,7 @@ import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -116,9 +117,16 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getAllUserBookings(String state, long userId) {
         userService.getUserById(userId);
-        List<Booking> bookings;
+        List<Booking> bookings = new ArrayList<>();
         Sort sort = Sort.by(Sort.Direction.DESC, "end");
-        switch (State.valueOf(state)) {
+        State stateCase;
+        try {
+            stateCase = State.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            log.error("Unknown state: {}", state);
+            throw new InvalidEntityException(String.format("Unknown state: %s", state));
+        }
+        switch (stateCase) {
             case PAST:
                 bookings = bookingRepository.findByBookerIdAndEndIsBefore(userId,
                         LocalDateTime.now(), sort);
@@ -136,7 +144,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByBookerIdAndStatus(userId,
                         Status.valueOf(state), sort);
                 break;
-            default:
+            case ALL:
                 bookings = bookingRepository.findByBookerId(userId, sort);
         }
         return BookingMapper.convertToListDto(bookings);
@@ -152,9 +160,16 @@ public class BookingServiceImpl implements BookingService {
             log.error("Owner with ID {} has no items", ownerId);
             throw new BookingNotFoundException("Owner has no items");
         }
-        List<Booking> bookings;
+        List<Booking> bookings = new ArrayList<>();
         Sort sort = Sort.by(Sort.Direction.DESC, "end");
-        switch (State.valueOf(state)) {
+        State stateCase;
+        try {
+            stateCase = State.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            log.error("Unknown state: {}", state);
+            throw new InvalidEntityException(String.format("Unknown state: %s", state));
+        }
+        switch (stateCase) {
             case PAST:
                 bookings = bookingRepository.findByItemIdInAndEndIsBefore(itemList,
                         LocalDateTime.now(), sort);
@@ -172,7 +187,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByItemIdInAndStatus(itemList,
                         Status.valueOf(state), sort);
                 break;
-            default:
+            case ALL:
                 bookings = bookingRepository.findByItemIdIn(itemList, sort);
         }
         return BookingMapper.convertToListDto(bookings);

@@ -15,6 +15,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.requests.ItemRequestRepository;
+import ru.practicum.shareit.requests.RequestNotFoundException;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
@@ -36,22 +39,32 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository requestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository repository,
-                           CommentRepository commentRepository,
                            UserService userService,
-                           BookingRepository bookingRepository) {
+                           BookingRepository bookingRepository,
+                           CommentRepository commentRepository,
+                           ItemRequestRepository requestRepository) {
         this.repository = repository;
-        this.commentRepository = commentRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
+        this.requestRepository = requestRepository;
     }
 
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         final Item item = ItemMapper.toItem(itemDto);
         final User user = UserMapper.toUser(userService.getUserById(userId));
+        if (itemDto.getRequestId() != null) {
+            final ItemRequest requestInDb = requestRepository
+                    .findById(itemDto.getRequestId()).orElseThrow(() ->
+                            new RequestNotFoundException(String
+                                    .format("Request ID %d not found", itemDto.getRequestId())));
+            item.setRequest(requestInDb);
+        }
         item.setOwner(user);
         if (itemDto.getId() != null) {
             log.error("Item ID should be empty {}", item);
@@ -180,7 +193,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto addComment(long userId, long itemId,
                                  CommentCreationDto textDto) {
-        log.info("input text {} ", textDto);
         final User user = UserMapper.toUser(userService.getUserById(userId));
         final Item item = repository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", itemId)));

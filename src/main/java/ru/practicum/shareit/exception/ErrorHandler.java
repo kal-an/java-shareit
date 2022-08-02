@@ -8,13 +8,16 @@ import ru.practicum.shareit.booking.BookingController;
 import ru.practicum.shareit.booking.BookingNotFoundException;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.ItemNotFoundException;
+import ru.practicum.shareit.requests.ItemRequestController;
+import ru.practicum.shareit.requests.RequestNotFoundException;
 import ru.practicum.shareit.user.UserController;
 import ru.practicum.shareit.user.UserNotFoundException;
 
 @RestControllerAdvice(assignableTypes = {
         UserController.class,
         ItemController.class,
-        BookingController.class})
+        BookingController.class,
+        ItemRequestController.class})
 public class ErrorHandler {
 
     @ExceptionHandler({InvalidEntityException.class})
@@ -29,7 +32,11 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            ItemNotFoundException.class,
+            BookingNotFoundException.class,
+            RequestNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());

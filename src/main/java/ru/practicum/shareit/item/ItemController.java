@@ -42,13 +42,19 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDtoExtended> getAllOwnerItems(@RequestHeader(X_HEADER_USER) long userId) {
-        return service.getAllOwnerItems(userId);
+    public List<ItemDtoExtended> getAllOwnerItems(
+                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
+                @RequestParam(defaultValue = "10", required = false) int size,
+                @RequestHeader(X_HEADER_USER) long userId) {
+        return service.getAllOwnerItems(fromPage, size, userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItemsForBooking(@RequestParam String text) {
-        return service.searchItemsForBooking(text);
+    public List<ItemDto> searchItemsForBooking(
+                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
+                @RequestParam(defaultValue = "10", required = false) int size,
+                @RequestParam String text) {
+        return service.searchItemsForBooking(fromPage, size, text);
     }
 
     @PostMapping("/{itemId}/comment")

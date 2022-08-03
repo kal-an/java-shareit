@@ -11,7 +11,7 @@ public interface ItemRequestService {
 
     List<ItemRequestDtoExtended> getAllOwnRequests(long userId);
 
-    List<ItemRequestDtoExtended> getAllOtherRequests(int from, int size, long userId);
+    List<ItemRequestDtoExtended> getAllOtherRequests(int fromPage, int size, long userId);
 
     ItemRequestDtoExtended getRequestById(long requestId, long userId);
 }

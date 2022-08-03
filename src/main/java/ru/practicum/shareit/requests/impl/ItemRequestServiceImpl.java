@@ -58,13 +58,13 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDtoExtended> getAllOtherRequests(int from, int size, long userId) {
-        if (from < 0 || size < 1) {
+    public List<ItemRequestDtoExtended> getAllOtherRequests(int fromPage, int size, long userId) {
+        if (fromPage < 0 || size < 1) {
             throw new InvalidEntityException("Invalid request parameter");
         }
         userService.getUserById(userId);
         Sort sortBy = Sort.by(Sort.Direction.DESC, "created");
-        int page = from / size;
+        int page = fromPage * size;
         Pageable pageable = PageRequest.of(page, size, sortBy);
         final List<ItemRequest> requests = requestRepository
                 .findByRequesterIdNot(userId, pageable);

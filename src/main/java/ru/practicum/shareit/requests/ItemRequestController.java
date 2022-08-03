@@ -34,10 +34,10 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<ItemRequestDtoExtended> getAllOtherRequests(
-                                @RequestParam(defaultValue = "0", required = false) int from,
-                                @RequestParam(defaultValue = "10", required = false) int size,
-                                @RequestHeader(X_HEADER_USER) long userId) {
-        return requestService.getAllOtherRequests(from, size, userId);
+                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
+                @RequestParam(defaultValue = "10", required = false) int size,
+                @RequestHeader(X_HEADER_USER) long userId) {
+        return requestService.getAllOtherRequests(fromPage, size, userId);
     }
 
     @GetMapping("/{requestId}")

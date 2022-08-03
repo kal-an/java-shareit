@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -27,7 +29,6 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -121,15 +122,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoExtended> getAllOwnerItems(long ownerId) {
+    public List<ItemDtoExtended> getAllOwnerItems(int fromPage, int size, long ownerId) {
         userService.getUserById(ownerId);
+        int page = fromPage * size;
+        Sort sortByEnd = Sort.by(Sort.Direction.DESC, "end");
+        Pageable pageable = PageRequest.of(page, size, sortByEnd);
         final List<ItemDtoExtended> itemDtoExtendedList = new ArrayList<>();
-        final List<Item> items = repository.findItemsByOwnerId(ownerId);
+        final List<Item> items = repository.findItemsByOwnerId(ownerId,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         LocalDateTime now = LocalDateTime.now();
-        Sort sort = Sort.by(Sort.Direction.DESC, "end");
         List<Booking> allBookings = bookingRepository.findByItemIdIn(items.stream()
                 .map(Item::getId)
-                .collect(Collectors.toList()), sort);
+                .collect(Collectors.toList()), pageable);
         for (Item item : items) {
             Booking lastBooking = allBookings.stream()
                     .filter(booking -> booking.getEnd().isBefore(now)
@@ -153,9 +157,7 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList()));
             itemDtoExtendedList.add(dtoExtended);
         }
-        return itemDtoExtendedList.stream()
-                .sorted(Comparator.comparing(ItemDto::getId))
-                .collect(Collectors.toList());
+        return itemDtoExtendedList;
     }
 
     private void setBookingDates(Booking lastBooking,
@@ -180,12 +182,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItemsForBooking(String text) {
+    public List<ItemDto> searchItemsForBooking(int fromPage, int size, String text) {
         if (text.isEmpty()) {
             log.info("Text is empty");
             return Collections.emptyList();
         }
-        return repository.searchItemsForBooking(text).stream()
+        int page = fromPage * size;
+        Pageable pageable = PageRequest.of(page, size);
+        return repository.searchItemsForBooking(text, pageable).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }

@@ -30,6 +30,7 @@ public class BookingDto {
 
     @Getter
     @Setter
+    @Builder
     public static class Item {
         private Long id;
         private String name;
@@ -37,6 +38,7 @@ public class BookingDto {
 
     @Getter
     @Setter
+    @Builder
     public static class User {
         private Long id;
     }

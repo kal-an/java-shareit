@@ -123,6 +123,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDtoExtended> getAllOwnerItems(int fromPage, int size, long ownerId) {
+        if (fromPage < 0 || size < 1) {
+            throw new InvalidEntityException("Invalid request parameter");
+        }
         userService.getUserById(ownerId);
         int page = fromPage * size;
         Sort sortByEnd = Sort.by(Sort.Direction.DESC, "end");
@@ -183,6 +186,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchItemsForBooking(int fromPage, int size, String text) {
+        if (fromPage < 0 || size < 1) {
+            throw new InvalidEntityException("Invalid request parameter");
+        }
         if (text.isEmpty()) {
             log.info("Text is empty");
             return Collections.emptyList();

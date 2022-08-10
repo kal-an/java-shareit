@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -8,10 +9,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@Validated
 public class ItemController {
 
     private final ItemService service;
@@ -43,16 +46,18 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoExtended> getAllOwnerItems(
-                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
-                @RequestParam(defaultValue = "10", required = false) int size,
+                @RequestParam(value = "from",
+                        defaultValue = "0", required = false) @Min(0) int fromPage,
+                @RequestParam(defaultValue = "10", required = false) @Min(1) int size,
                 @RequestHeader(X_HEADER_USER) long userId) {
         return service.getAllOwnerItems(fromPage, size, userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItemsForBooking(
-                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
-                @RequestParam(defaultValue = "10", required = false) int size,
+                @RequestParam(value = "from",
+                        defaultValue = "0", required = false) @Min(0) int fromPage,
+                @RequestParam(defaultValue = "10", required = false) @Min(1) int size,
                 @RequestParam String text) {
         return service.searchItemsForBooking(fromPage, size, text);
     }

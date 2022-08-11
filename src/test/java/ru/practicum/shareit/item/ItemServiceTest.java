@@ -64,7 +64,8 @@ public class ItemServiceTest {
                 savedItemDto.getId());
         BookingDto savedBookingDto1 = bookingService.addBooking(bookingDto1, savedBookerDto1.getId());
 
-        BookingDto updatedBookingDto1 = bookingService.updateBooking(savedBookingDto1.getId(), savedUserDto.getId(), true);
+        BookingDto updatedBookingDto1 = bookingService.updateBooking(savedBookingDto1.getId(),
+                savedUserDto.getId(), true);
 
         List<ItemDtoExtended> items = itemService.getAllOwnerItems(0, 10, savedUserDto.getId());
 
@@ -73,8 +74,6 @@ public class ItemServiceTest {
                 hasProperty("name", equalTo(savedItemDto.getName())),
                 hasProperty("description", equalTo(savedItemDto.getDescription())),
                 hasProperty("available", equalTo(savedItemDto.getAvailable())),
-                hasProperty("nextBooking", notNullValue())
-                )));
-
+                hasProperty("nextBooking", notNullValue()))));
     }
 }

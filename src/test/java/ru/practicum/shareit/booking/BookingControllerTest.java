@@ -42,7 +42,7 @@ class BookingControllerTest {
 
     private MockMvc mvc;
 
-    private String X_HEADER_USER = "X-Sharer-User-Id";
+    private final String X_HEADER_USER = "X-Sharer-User-Id";
     private BookingDto bookingDto;
     private BookingCreationDto bookingCreationDto;
 

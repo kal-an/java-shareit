@@ -120,6 +120,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getAllUserBookings(int fromPage, int size, String state, long userId) {
+        if (fromPage < 0 || size < 1) {
+            throw new InvalidEntityException("Invalid request parameter");
+        }
         userService.getUserById(userId);
         List<Booking> bookings = new ArrayList<>();
         Sort sortBy = Sort.by(Sort.Direction.DESC, "end");
@@ -159,6 +162,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getAllOwnerBookings(int fromPage, int size,
                                                 String state, long ownerId) {
+        if (fromPage < 0 || size < 1) {
+            throw new InvalidEntityException("Invalid request parameter");
+        }
         userService.getUserById(ownerId);
         List<Long> itemList = itemService.getAllOwnerItems(fromPage, size, ownerId).stream()
                 .map(ItemDto::getId)

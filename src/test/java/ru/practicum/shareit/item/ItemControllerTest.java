@@ -45,7 +45,7 @@ class ItemControllerTest {
     private MockMvc mvc;
 
     private ItemDto itemDto;
-    private final String X_HEADER_USER = "X-Sharer-User-Id";
+    private static final String X_HEADER_USER = "X-Sharer-User-Id";
     private CommentDto commentDto;
     private CommentCreationDto creationDto;
 

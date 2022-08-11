@@ -44,7 +44,7 @@ class RequestControllerTest {
 
     private MockMvc mvc;
 
-    private String X_HEADER_USER = "X-Sharer-User-Id";
+    private final static String X_HEADER_USER = "X-Sharer-User-Id";
     private ItemRequestDto requestDto;
     private ItemRequestDtoExtended requestDtoExtendedDto;
 

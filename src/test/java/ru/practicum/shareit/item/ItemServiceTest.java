@@ -69,7 +69,7 @@ public class ItemServiceTest {
 
         List<ItemDtoExtended> items = itemService.getAllOwnerItems(0, 10, savedUserDto.getId());
 
-        assertThat(items, hasItem( allOf(
+        assertThat(items, hasItem(allOf(
                 hasProperty("id", notNullValue()),
                 hasProperty("name", equalTo(savedItemDto.getName())),
                 hasProperty("description", equalTo(savedItemDto.getDescription())),

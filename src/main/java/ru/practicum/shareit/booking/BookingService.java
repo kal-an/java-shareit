@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 public interface BookingService {
@@ -13,8 +15,10 @@ public interface BookingService {
 
     BookingDto getBookingById(long id, long userId);
 
-    List<BookingDto> getAllUserBookings(int fromPage, int size, String state, long userId);
+    List<BookingDto> getAllUserBookings(@PositiveOrZero int fromPage,
+                                        @Positive int size, String state, long userId);
 
-    List<BookingDto> getAllOwnerBookings(int fromPage, int size, String state, long userId);
+    List<BookingDto> getAllOwnerBookings(@PositiveOrZero int fromPage,
+                                         @Positive int size, String state, long userId);
 
 }

@@ -1,15 +1,19 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
+@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -43,8 +47,9 @@ public class BookingController {
     public List<BookingDto> getAllUserBookings(
                 @RequestParam(defaultValue = "ALL") String state,
                 @RequestHeader(X_HEADER_USER) long userId,
-                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
-                @RequestParam(defaultValue = "10", required = false) int size) {
+                @RequestParam(value = "from", defaultValue = "0",
+                        required = false) @PositiveOrZero int fromPage,
+                @RequestParam(defaultValue = "10", required = false) @Positive int size) {
         return bookingService.getAllUserBookings(fromPage, size, state, userId);
     }
 
@@ -52,8 +57,9 @@ public class BookingController {
     public List<BookingDto> getAllOwnerBookings(
                 @RequestParam(defaultValue = "ALL") String state,
                 @RequestHeader(X_HEADER_USER) long userId,
-                @RequestParam(value = "from", defaultValue = "0", required = false) int fromPage,
-                @RequestParam(defaultValue = "10", required = false) int size) {
+                @RequestParam(value = "from", defaultValue = "0",
+                        required = false) @PositiveOrZero int fromPage,
+                @RequestParam(defaultValue = "10", required = false) @Positive int size) {
         return bookingService.getAllOwnerBookings(fromPage, size, state, userId);
     }
 }

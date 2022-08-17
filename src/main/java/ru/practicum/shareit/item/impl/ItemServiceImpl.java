@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
@@ -26,6 +27,8 @@ import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Validated
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
@@ -122,10 +126,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoExtended> getAllOwnerItems(int fromPage, int size, long ownerId) {
-        if (fromPage < 0 || size < 1) {
-            throw new InvalidEntityException("Invalid request parameter");
-        }
+    public List<ItemDtoExtended> getAllOwnerItems(@PositiveOrZero int fromPage,
+                                                  @Positive int size, long ownerId) {
         userService.getUserById(ownerId);
         int page = fromPage * size;
         Sort sortByEnd = Sort.by(Sort.Direction.DESC, "end");
@@ -185,10 +187,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItemsForBooking(int fromPage, int size, String text) {
-        if (fromPage < 0 || size < 1) {
-            throw new InvalidEntityException("Invalid request parameter");
-        }
+    public List<ItemDto> searchItemsForBooking(@PositiveOrZero int fromPage,
+                                               @Positive int size, String text) {
         if (text.isEmpty()) {
             log.info("Text is empty");
             return Collections.emptyList();

@@ -9,7 +9,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -46,18 +47,18 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoExtended> getAllOwnerItems(
-                @RequestParam(value = "from",
-                        defaultValue = "0", required = false) @Min(0) int fromPage,
-                @RequestParam(defaultValue = "10", required = false) @Min(1) int size,
+                @RequestParam(value = "from", defaultValue = "0",
+                        required = false) @PositiveOrZero int fromPage,
+                @RequestParam(defaultValue = "10", required = false) @Positive int size,
                 @RequestHeader(X_HEADER_USER) long userId) {
         return service.getAllOwnerItems(fromPage, size, userId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItemsForBooking(
-                @RequestParam(value = "from",
-                        defaultValue = "0", required = false) @Min(0) int fromPage,
-                @RequestParam(defaultValue = "10", required = false) @Min(1) int size,
+                @RequestParam(value = "from", defaultValue = "0",
+                        required = false) @PositiveOrZero int fromPage,
+                @RequestParam(defaultValue = "10", required = false) @Positive int size,
                 @RequestParam String text) {
         return service.searchItemsForBooking(fromPage, size, text);
     }

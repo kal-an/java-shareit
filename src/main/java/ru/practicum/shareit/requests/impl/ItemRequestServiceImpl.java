@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.InvalidEntityException;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.requests.ItemRequestMapper;
 import ru.practicum.shareit.requests.ItemRequestRepository;
@@ -19,12 +19,15 @@ import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Validated
 public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository requestRepository;
@@ -58,10 +61,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDtoExtended> getAllOtherRequests(int fromPage, int size, long userId) {
-        if (fromPage < 0 || size < 1) {
-            throw new InvalidEntityException("Invalid request parameter");
-        }
+    public List<ItemRequestDtoExtended> getAllOtherRequests(@PositiveOrZero int fromPage,
+                                                            @Positive int size, long userId) {
         userService.getUserById(userId);
         Sort sortBy = Sort.by(Sort.Direction.DESC, "created");
         int page = fromPage * size;

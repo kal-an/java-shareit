@@ -5,6 +5,8 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 public interface ItemService {
@@ -15,9 +17,11 @@ public interface ItemService {
 
     ItemDtoExtended getItemById(long id, long userId);
 
-    List<ItemDtoExtended> getAllOwnerItems(int fromPage, int size, long userId);
+    List<ItemDtoExtended> getAllOwnerItems(@PositiveOrZero int fromPage,
+                                           @Positive int size, long userId);
 
-    List<ItemDto> searchItemsForBooking(int fromPage, int size, String text);
+    List<ItemDto> searchItemsForBooking(@PositiveOrZero int fromPage,
+                                        @Positive int size, String text);
 
     CommentDto addComment(long userId, long itemId, CommentCreationDto text);
 

@@ -5,15 +5,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
@@ -29,17 +28,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
+@WebMvcTest(BookingController.class)
+@AutoConfigureMockMvc
 class BookingControllerTest {
-    @Mock
+    @MockBean
     private BookingService bookingService;
-
-    @InjectMocks
-    private BookingController controller;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    @Autowired
     private MockMvc mvc;
 
     private static final String X_HEADER_USER = "X-Sharer-User-Id";
@@ -47,9 +44,9 @@ class BookingControllerTest {
     private BookingCreationDto bookingCreationDto;
 
     @BeforeEach
-    void setUp() {
+    void setUp(WebApplicationContext wac) {
         mvc = MockMvcBuilders
-                .standaloneSetup(controller)
+                .webAppContextSetup(wac)
                 .build();
 
         mapper.registerModule(new JavaTimeModule());
@@ -78,7 +75,6 @@ class BookingControllerTest {
     void saveNewBooking() throws Exception {
         when(bookingService.addBooking(any(BookingCreationDto.class), anyLong()))
                 .thenReturn(bookingDto);
-        mapper.registerModule(new JavaTimeModule());
 
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingCreationDto))
@@ -95,7 +91,6 @@ class BookingControllerTest {
     void saveNewBookingWithoutHeader() throws Exception {
         when(bookingService.addBooking(any(BookingCreationDto.class), anyLong()))
                 .thenReturn(bookingDto);
-        mapper.registerModule(new JavaTimeModule());
 
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingCreationDto))
@@ -111,7 +106,6 @@ class BookingControllerTest {
         bookingCreationDto.setStart(null);
         when(bookingService.addBooking(bookingCreationDto, 1L))
                 .thenReturn(bookingDto);
-        mapper.registerModule(new JavaTimeModule());
 
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingCreationDto))
@@ -128,7 +122,6 @@ class BookingControllerTest {
         bookingCreationDto.setEnd(null);
         when(bookingService.addBooking(bookingCreationDto, 1L))
                 .thenReturn(bookingDto);
-        mapper.registerModule(new JavaTimeModule());
 
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingCreationDto))
@@ -162,7 +155,7 @@ class BookingControllerTest {
         when(bookingService.updateBooking(anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(bookingDto);
 
-        mvc.perform(patch("/bookings/" + 1L)
+            mvc.perform(patch("/bookings/" + 1L)
                         .content(mapper.writeValueAsString(bookingDto))
                         .header(X_HEADER_USER, 1L)
                         .param("approved", "true")

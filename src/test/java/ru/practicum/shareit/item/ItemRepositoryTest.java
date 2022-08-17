@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 @DataJpaTest
-public class ItemJpaTest {
+public class ItemRepositoryTest {
 
     @Autowired
     private TestEntityManager em;

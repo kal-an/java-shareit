@@ -9,11 +9,13 @@ import java.util.List;
 public class BookingMapper {
 
     public static BookingDto toBookingDto(Booking booking) {
-        var item = new BookingDto.Item();
-        var user = new BookingDto.User();
-        item.setId(booking.getItem().getId());
-        item.setName(booking.getItem().getName());
-        user.setId(booking.getBooker().getId());
+        var item = BookingDto.Item.builder()
+                .id(booking.getItem().getId())
+                .name(booking.getItem().getName())
+                .build();
+        var user = BookingDto.User.builder()
+                .id(booking.getBooker().getId())
+                .build();
         return BookingDto.builder()
                 .id(booking.getId())
                 .start(booking.getStart())

@@ -42,6 +42,7 @@ public class Item {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @Transient
+    @OneToOne
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
 }

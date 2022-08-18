@@ -2,8 +2,11 @@ package ru.practicum.shareit.item.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
@@ -15,12 +18,17 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoExtended;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.requests.ItemRequestRepository;
+import ru.practicum.shareit.requests.RequestNotFoundException;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,28 +37,39 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Validated
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository repository;
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository requestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository repository,
-                           CommentRepository commentRepository,
                            UserService userService,
-                           BookingRepository bookingRepository) {
+                           BookingRepository bookingRepository,
+                           CommentRepository commentRepository,
+                           ItemRequestRepository requestRepository) {
         this.repository = repository;
-        this.commentRepository = commentRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
+        this.requestRepository = requestRepository;
     }
 
     @Override
     public ItemDto addItem(ItemDto itemDto, long userId) {
         final Item item = ItemMapper.toItem(itemDto);
         final User user = UserMapper.toUser(userService.getUserById(userId));
+        if (itemDto.getRequestId() != null) {
+            final ItemRequest requestInDb = requestRepository
+                    .findById(itemDto.getRequestId()).orElseThrow(() ->
+                            new RequestNotFoundException(String
+                                    .format("Request ID %d not found", itemDto.getRequestId())));
+            item.setRequest(requestInDb);
+        }
         item.setOwner(user);
         if (itemDto.getId() != null) {
             log.error("Item ID should be empty {}", item);
@@ -107,15 +126,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoExtended> getAllOwnerItems(long ownerId) {
+    public List<ItemDtoExtended> getAllOwnerItems(@PositiveOrZero int fromPage,
+                                                  @Positive int size, long ownerId) {
         userService.getUserById(ownerId);
+        int page = fromPage * size;
+        Sort sortByEnd = Sort.by(Sort.Direction.DESC, "end");
+        Pageable pageable = PageRequest.of(page, size, sortByEnd);
         final List<ItemDtoExtended> itemDtoExtendedList = new ArrayList<>();
-        final List<Item> items = repository.findItemsByOwnerId(ownerId);
+        final List<Item> items = repository.findItemsByOwnerId(ownerId,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
         LocalDateTime now = LocalDateTime.now();
-        Sort sort = Sort.by(Sort.Direction.DESC, "end");
         List<Booking> allBookings = bookingRepository.findByItemIdIn(items.stream()
                 .map(Item::getId)
-                .collect(Collectors.toList()), sort);
+                .collect(Collectors.toList()), pageable);
         for (Item item : items) {
             Booking lastBooking = allBookings.stream()
                     .filter(booking -> booking.getEnd().isBefore(now)
@@ -164,12 +187,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItemsForBooking(String text) {
+    public List<ItemDto> searchItemsForBooking(@PositiveOrZero int fromPage,
+                                               @Positive int size, String text) {
         if (text.isEmpty()) {
             log.info("Text is empty");
             return Collections.emptyList();
         }
-        return repository.searchItemsForBooking(text).stream()
+        int page = fromPage * size;
+        Pageable pageable = PageRequest.of(page, size);
+        return repository.searchItemsForBooking(text, pageable).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -177,7 +203,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentDto addComment(long userId, long itemId,
                                  CommentCreationDto textDto) {
-        log.info("input text {} ", textDto);
         final User user = UserMapper.toUser(userService.getUserById(userId));
         final Item item = repository.findById(itemId).orElseThrow(() ->
                 new ItemNotFoundException(String.format("Item with ID %d not found", itemId)));

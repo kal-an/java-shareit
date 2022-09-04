@@ -127,12 +127,12 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDtoExtended> getAllOwnerItems(int fromPage,
                                                   int size, long ownerId) {
         userService.getUserById(ownerId);
-        int page = fromPage * size;
+        int page = fromPage / size;
         Sort sortByEnd = Sort.by(Sort.Direction.DESC, "end");
         Pageable pageable = PageRequest.of(page, size, sortByEnd);
         final List<ItemDtoExtended> itemDtoExtendedList = new ArrayList<>();
         final List<Item> items = repository.findItemsByOwnerId(ownerId,
-                PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "id")));
+                PageRequest.of(0, size, Sort.by(Sort.Direction.ASC, "id")));
         LocalDateTime now = LocalDateTime.now();
         List<Booking> allBookings = bookingRepository.findByItemIdIn(items.stream()
                 .map(Item::getId)
@@ -191,7 +191,7 @@ public class ItemServiceImpl implements ItemService {
             log.info("Text is empty");
             return Collections.emptyList();
         }
-        int page = fromPage * size;
+        int page = fromPage / size;
         Pageable pageable = PageRequest.of(page, size);
         return repository.searchItemsForBooking(text, pageable).stream()
                 .map(ItemMapper::toItemDto)

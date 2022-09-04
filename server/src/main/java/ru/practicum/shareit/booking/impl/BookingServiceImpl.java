@@ -126,7 +126,7 @@ public class BookingServiceImpl implements BookingService {
         userService.getUserById(userId);
         List<Booking> bookings = new ArrayList<>();
         Sort sortBy = Sort.by(Sort.Direction.DESC, "end");
-        int page = fromPage * size;
+        int page = fromPage / size;
         Pageable pageable = PageRequest.of(page, size, sortBy);
         State stateCase;
         try {
@@ -172,8 +172,8 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingNotFoundException("Owner has no items");
         }
         List<Booking> bookings = new ArrayList<>();
+        int page = fromPage / size;
         Sort sortBy = Sort.by(Sort.Direction.DESC, "end");
-        int page = fromPage * size;
         Pageable pageable = PageRequest.of(page, size, sortBy);
         State stateCase;
         try {

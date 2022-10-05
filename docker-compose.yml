@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  gateway:
+    build: ./gateway
+    image: kali3/shareit-gateway:0.1
+    container_name: shareit-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    environment:
+      - SHAREIT_SERVER_URL=http://server:9090
+
+  server:
+    build: ./server
+    image: kali3/shareit-server:0.1
+    container_name: shareit-server
+    ports:
+      - "9090:9090"
+    depends_on:
+      - db
+    environment:
+      - TZ=Asia/Yekaterinburg
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
+      - DB_NAME=shareit
+      - POSTGRES_USER=shareit
+      - POSTGRES_PASSWORD=shareit
+      - DB_HOST=db
+      - DB_PORT=5432
+  db:
+    image: postgres:13.7-alpine
+    volumes:
+      - /var/lib/postgresql/data/
+      - ./schema.sql:/docker-entrypoint-initdb.d/init.sql
+    container_name: shareit-db
+    ports:
+      - "6541:5432"
+    environment:
+      - DB_NAME=shareit
+      - POSTGRES_USER=shareit
+      - POSTGRES_PASSWORD=shareit
+      - DB_HOST=db
+      - DB_PORT=5432

@@ -12,4 +12,4 @@
 6. Управление бронированием, запросами других пользователей
 ---
 ### Схема базы данных 
-![SchemaDb](db/Filmorate.drawio.png)
+![SchemaDb](db/shareit.png)
